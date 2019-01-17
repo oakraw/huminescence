@@ -5,15 +5,15 @@
 </template>
 
 <script>
-// import { FIND_BRIDGE } from './store/actions/bridge';
+import { FIND_BRIDGE } from './store/actions/bridge';
 
 export default {
   name: 'App',
   data() {
-    return {
-    };
+    return {};
   },
   created() {
+    this.$store.dispatch(FIND_BRIDGE);
   },
 };
 </script>

@@ -5,30 +5,30 @@
       align-center
       justify-center
     >
-      <div v-if="bridgeIP">
+      <v-layout v-if="bridgeIP" align-center column>
+        <span class="title mb-3">Press the button on Philip Bridge.</span>
         <v-btn
           color="primary"
           large
           dark
           @click="pairBridge"
         >
-          กด Bridge แล้ว
+          I already pressed it
         </v-btn>
-      </div>
+      </v-layout>
     </v-layout>
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import { FIND_BRIDGE, PAIR_BRIDGE } from '../store/actions/bridge';
+import { PAIR_BRIDGE } from '../store/actions/bridge';
 
 export default {
   computed: {
     ...mapGetters(['bridgeIP']),
   },
   created() {
-    this.$store.dispatch(FIND_BRIDGE);
   },
   methods: {
     pairBridge() {

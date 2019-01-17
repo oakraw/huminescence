@@ -5,8 +5,10 @@
 import { FIND_BRIDGE, BRIDGE_FOUND, PAIR_BRIDGE, SET_IP, PAIR_BRIDGE_SUCCESS } from '../actions/bridge';
 import { ApiService, BridgeService } from '../../common/api';
 
+const BRIDGE_ID = 'BRIDGE_ID';
+
 const state = {
-  bridgeId: null,
+  bridgeId: localStorage.getItem(BRIDGE_ID) || null,
   bridgeIP: null,
   finding: false,
 };
@@ -15,6 +17,10 @@ const getters = {
   finding: (state) => state.finding,
   bridgeId: (state) => state.bridgeId,
   bridgeIP: (state) => state.bridgeIP,
+};
+
+const saveLocalStorage = (bridgeId) => {
+  localStorage.setItem(BRIDGE_ID, bridgeId);
 };
 
 const actions = {
@@ -34,6 +40,7 @@ const actions = {
         .then((resp) => {
           if (resp.length > 0) {
             const bridgeId = resp[0].success.username;
+            saveLocalStorage(bridgeId);
             commit(PAIR_BRIDGE_SUCCESS, bridgeId);
           }
           resolve(resp);
