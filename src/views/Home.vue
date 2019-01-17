@@ -10,7 +10,7 @@
         wrap
       >
         <v-flex xs4>
-          <v-card @click="launchCamera">
+          <v-card @click="launchCamera" ripple>
             <v-img
               src="https://www.techlicious.com/images/av/family-watching-movie-700px.jpg"
               aspect-ratio="1"
