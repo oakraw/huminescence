@@ -3,16 +3,20 @@ import Vue from 'vue';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 import { REGISTER_URL } from './config';
+import store from '../../store';
+import { GET_IP } from '../../store/actions/bridge';
+
+function setEndpoint(endpoint) {
+  Vue.axios.defaults.baseURL = endpoint;
+}
 
 const ApiService = {
   init() {
     Vue.use(VueAxios, axios);
+    Vue.axios.interceptors.request.use(this.interceptRequest, (error) => Promise.reject(error));
   },
-  findIP() {
-    Vue.axios.defaults.baseURL = REGISTER_URL;
-  },
-  setEndpoint(endpoint) {
-    Vue.axios.defaults.baseURL = endpoint;
+  setEndpointForfindIP() {
+    setEndpoint(REGISTER_URL);
   },
   get(resource, query) {
     return Vue.axios.get(resource, query);
@@ -28,6 +32,18 @@ const ApiService = {
   },
   delete(resource, params) {
     return Vue.axios.delete(`${resource}`, params);
+  },
+  async interceptRequest(config) {
+    const newConfig = config;
+    if (config.url && !config.url.includes(REGISTER_URL)) {
+      try {
+        const ip = await store.dispatch(GET_IP);
+        newConfig.url = `http://${ip}/api/${newConfig.url}`;
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    }
+    return newConfig;
   },
 };
 

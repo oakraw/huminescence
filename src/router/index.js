@@ -4,6 +4,7 @@ import Home from '../views/Home';
 import Register from '../views/Register';
 import Camera from '../views/Camera';
 import address from './address';
+import { bridgeRequired } from './guard';
 
 Vue.use(Router);
 
@@ -13,6 +14,7 @@ export default new Router({
       path: '/',
       name: address.HOME,
       component: Home,
+      beforeEnter: bridgeRequired,
     },
     {
       path: '/register',
@@ -23,6 +25,7 @@ export default new Router({
       path: '/movie',
       name: address.CAMERA,
       component: Camera,
+      beforeEnter: bridgeRequired,
     },
   ],
 });

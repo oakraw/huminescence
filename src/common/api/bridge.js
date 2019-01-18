@@ -2,7 +2,7 @@ import ApiService from './service';
 
 const BridgeService = {
   findBridge() {
-    ApiService.findIP();
+    ApiService.setEndpointForfindIP();
     return ApiService.get().then((resp) => resp.data);
   },
   getBridgeId() {

@@ -15,7 +15,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { FIND_BRIDGE } from './store/actions/bridge';
+// import { FIND_BRIDGE } from './store/actions/bridge';
 
 export default {
   name: 'App',
@@ -32,7 +32,8 @@ export default {
   },
   methods: {
     async fetch() {
-      await this.$store.dispatch(FIND_BRIDGE);
+      // const ip = await this.$store.dispatch(FIND_BRIDGE);
+      // console.log(ip);
     },
   },
 };

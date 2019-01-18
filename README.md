@@ -1,4 +1,4 @@
-# huenilation
+# huminescence
 
 ## Project setup
 ```

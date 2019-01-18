@@ -2,13 +2,22 @@
 /* eslint function-paren-newline: 0 */
 /* eslint object-curly-newline: 0 */
 
-import { FIND_BRIDGE, BRIDGE_FOUND, PAIR_BRIDGE, SET_IP, PAIR_BRIDGE_SUCCESS } from '../actions/bridge';
-import { ApiService, BridgeService } from '../../common/api';
+import {
+  FIND_BRIDGE,
+  BRIDGE_FOUND,
+  PAIR_BRIDGE,
+  GET_IP,
+  PAIRING_BRIDGE,
+  PAIR_BRIDGE_SUCCESS,
+  PAIR_BRIDGE_ERROR,
+} from '../actions/bridge';
+import { BridgeService } from '../../common/api';
 
 const BRIDGE_ID = 'BRIDGE_ID';
 
 const state = {
   bridgeId: localStorage.getItem(BRIDGE_ID) || null,
+  pairing: false,
   bridgeIP: null,
   finding: false,
 };
@@ -17,6 +26,7 @@ const getters = {
   finding: (state) => state.finding,
   bridgeId: (state) => state.bridgeId,
   bridgeIP: (state) => state.bridgeIP,
+  bridgePairing: (state) => state.pairing,
 };
 
 const saveLocalStorage = (bridgeId) => {
@@ -24,34 +34,58 @@ const saveLocalStorage = (bridgeId) => {
 };
 
 const actions = {
-  [FIND_BRIDGE]: ({ dispatch, commit }) => {
+  [FIND_BRIDGE]: ({ commit }) => {
     commit(FIND_BRIDGE);
-    BridgeService.findBridge().then((availableBridges) => {
-      if (availableBridges.length > 0) {
-        const ip = availableBridges[0].internalipaddress;
-        dispatch(SET_IP, ip);
-        commit(BRIDGE_FOUND, availableBridges[0].internalipaddress);
+    return new Promise(async (resolve, reject) => {
+      try {
+        const availableBridges = await BridgeService.findBridge();
+        if (availableBridges.length > 0) {
+          const ip = availableBridges[0].internalipaddress;
+          commit(BRIDGE_FOUND, ip);
+          resolve(ip);
+        }
+      } catch (error) {
+        reject(error);
       }
     });
   },
-  [PAIR_BRIDGE]: ({ commit }) =>
-    new Promise((resolve, reject) =>
+  [PAIR_BRIDGE]: ({ commit }) => {
+    commit(PAIRING_BRIDGE);
+    return new Promise((resolve, reject) =>
       BridgeService.getBridgeId()
         .then((resp) => {
           if (resp.length > 0) {
-            const bridgeId = resp[0].success.username;
-            saveLocalStorage(bridgeId);
-            commit(PAIR_BRIDGE_SUCCESS, bridgeId);
+            const bridgeResp = resp[0];
+            if (bridgeResp.success) {
+              const bridgeId = bridgeResp.success.username;
+              saveLocalStorage(bridgeId);
+              commit(PAIR_BRIDGE_SUCCESS, bridgeId);
+            } else {
+              commit(PAIR_BRIDGE_ERROR);
+              reject(bridgeResp.error.description);
+            }
           }
           resolve(resp);
         })
         .catch((error) => {
+          commit(PAIR_BRIDGE_ERROR);
           reject(error);
         }),
-    ),
-  [SET_IP]: (_, ip) => {
-    ApiService.setEndpoint(`http://${ip}/api/`);
+    );
   },
+  [GET_IP]: ({ dispatch }) =>
+    new Promise(async (resolve, reject) => {
+      if (state.bridgeIP) {
+        resolve(state.bridgeIP);
+      } else {
+        try {
+          const ip = await dispatch(FIND_BRIDGE);
+          resolve(ip);
+        } catch (error) {
+          reject(error);
+        }
+      }
+    }),
 };
 
 const mutations = {
@@ -62,8 +96,15 @@ const mutations = {
     state.finding = false;
     state.bridgeIP = bridgeIP;
   },
+  [PAIRING_BRIDGE]: (state) => {
+    state.pairing = true;
+  },
   [PAIR_BRIDGE_SUCCESS]: (state, bridgeId) => {
+    state.pairing = false;
     state.bridgeId = bridgeId;
+  },
+  [PAIR_BRIDGE_ERROR]: (state) => {
+    state.pairing = false;
   },
 };
 
