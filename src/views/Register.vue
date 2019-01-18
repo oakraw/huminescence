@@ -23,6 +23,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { PAIR_BRIDGE } from '../store/actions/bridge';
+import address from '../router/address';
 
 export default {
   computed: {
@@ -31,8 +32,11 @@ export default {
   created() {
   },
   methods: {
-    pairBridge() {
-      this.$store.dispatch(PAIR_BRIDGE);
+    async pairBridge() {
+      const success = await this.$store.dispatch(PAIR_BRIDGE);
+      if (success) {
+        this.$router.push({ name: address.HOME });
+      }
     },
   },
 };
