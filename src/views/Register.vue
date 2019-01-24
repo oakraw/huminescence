@@ -26,15 +26,19 @@
           color="primary"
           class="text-sm-center"
         />
-        <span v-if="error" class="error--text mt-3">{{error}}</span>
+        <span
+          v-if="error"
+          class="error--text mt-3"
+        >{{error}}</span>
       </v-layout>
+      <h2 v-else>{{findBridgeMessage}}</h2>
     </v-layout>
   </v-container>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import { PAIR_BRIDGE } from '../store/actions/bridge';
+import { FIND_BRIDGE, PAIR_BRIDGE, CLEAR_BRIDGE } from '../store/actions/bridge';
 import address from '../router/address';
 
 export default {
@@ -44,10 +48,21 @@ export default {
   data() {
     return {
       error: null,
+      findBridgeMessage: 'finding bridge...',
     };
   },
-  created() {},
+  created() {
+    this.fetch();
+    this.$store.dispatch(CLEAR_BRIDGE);
+  },
   methods: {
+    async fetch() {
+      try {
+        await this.$store.dispatch(FIND_BRIDGE);
+      } catch (error) {
+        this.findBridgeMessage = 'Not found bridge';
+      }
+    },
     async pairBridge() {
       try {
         const success = await this.$store.dispatch(PAIR_BRIDGE);

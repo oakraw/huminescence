@@ -2,86 +2,101 @@
   <v-layout
     fill-height
     :style="{ background: pickedColor }"
-    column
+    row
+    wrap
   >
-    <div class="demo-frame">
-      <div class="demo-container">
-        <video
-          id="video"
-          width="100%"
-          height="450"
-          autoplay
-          muted
-          controls
-        ></video>
-        <canvas
-          id="canvas"
-          width="600"
-          height="400"
-          style="display: none;"
-        ></canvas>
+    <v-flex xs12>
+      <div class="demo-frame">
+        <div class="demo-container">
+          <video
+            id="video"
+            width="100%"
+            height="450"
+            autoplay
+            muted
+            controls
+          ></video>
+          <canvas
+            id="canvas"
+            width="600"
+            height="400"
+            style="display: none;"
+          ></canvas>
+        </div>
       </div>
-    </div>
-    <v-btn
-      color="primary"
-      @click="init"
+    </v-flex>
+    <v-flex
+      xs12
+      pa-4
     >
-      Start
-    </v-btn>
+      <v-select
+        v-model="selectedCamera"
+        v-if="cameras.length > 0"
+        :items="cameras"
+        item-text="name"
+        label="Camera"
+        box
+      ></v-select>
+    </v-flex>
+    <v-flex
+      xs12
+      d-flex
+    >
+      <v-btn
+        color="primary"
+        @click="init"
+        large
+      >
+        Start
+      </v-btn>
+    </v-flex>
   </v-layout>
 </template>
 
 <script>
 /* eslint no-restricted-properties: 0 */
+/* eslint prefer-destructuring: 0 */
+
 import Color from 'color';
 import ColorThief from '../lib/color-thief';
 import { SHOW_ERROR } from '../store/actions/ui';
-import { GET_DEVICES, CHANGE_DEVICES_COLOR } from '../store/actions/control';
+import controlLight from '../mixins/controlLight';
 
 let video = null;
 let canvas = null;
 let context = null;
 
 let timeInterval = 0;
-let previousXY = [-999, -999];
-
-function enhanceColor(normalized) {
-  if (normalized > 0.04045) {
-    return Math.pow((normalized + 0.055) / (1.0 + 0.055), 2.4);
-  }
-  return normalized / 12.92;
-}
-
-function RGBtoXY(r, g, b) {
-  const rNorm = r / 255.0;
-  const gNorm = g / 255.0;
-  const bNorm = b / 255.0;
-
-  const rFinal = enhanceColor(rNorm);
-  const gFinal = enhanceColor(gNorm);
-  const bFinal = enhanceColor(bNorm);
-
-  const X = rFinal * 0.649926 + gFinal * 0.103455 + bFinal * 0.197109;
-  const Y = rFinal * 0.234327 + gFinal * 0.743075 + bFinal * 0.022598;
-  const Z = rFinal * 0.0 + gFinal * 0.053077 + bFinal * 1.035763;
-
-  if (X + Y + Z === 0) {
-    return [0, 0];
-  }
-  const xFinal = X / (X + Y + Z);
-  const yFinal = Y / (X + Y + Z);
-
-  return [xFinal, yFinal];
-}
 
 export default {
+  mixins: [controlLight],
   data() {
     return {
+      currentStream: null,
+      selectedCamera: null,
+      cameras: [],
       pickedColor: '',
     };
   },
   created() {
-    this.fetch();
+    navigator.mediaDevices.enumerateDevices().then((mediaDevices) => {
+      mediaDevices.forEach((device) => {
+        const mediaDevice = device;
+        if (mediaDevice.kind === 'videoinput') {
+          this.cameras.push(mediaDevice);
+        }
+      });
+
+      this.cameras.forEach((mediaDevice, index) => {
+        const camera = mediaDevice;
+        camera.name = camera.label || `camera ${index + 1}`;
+      });
+      if (this.cameras.length > 0) {
+        this.selectedCamera = this.cameras[0];
+      }
+
+      console.log(this.cameras);
+    });
   },
   methods: {
     async init() {
@@ -89,22 +104,36 @@ export default {
       canvas = document.getElementById('canvas');
       context = canvas.getContext('2d');
 
+      this.stopMediaTracks();
+
+      const videoConstraints = {};
+      if (this.selectedCamera.deviceId === '') {
+        videoConstraints.facingMode = 'environment';
+      } else {
+        videoConstraints.deviceId = { exact: this.selectedCamera.deviceId };
+      }
+      const constraints = {
+        video: videoConstraints,
+        audio: false,
+      };
+
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices
-          .getUserMedia({
-            video: true,
-          })
-          .then((stream) => {
-            video.srcObject = stream;
-            video.addEventListener('timeupdate', this.frameProcess);
-            video.play();
-          });
+        navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
+          this.currentStream = stream;
+          video.srcObject = stream;
+          video.addEventListener('timeupdate', this.frameProcess);
+          video.play();
+        });
       } else {
         this.$store.dispatch(SHOW_ERROR, 'Camera not support');
       }
     },
-    async fetch() {
-      await this.$store.dispatch(GET_DEVICES);
+    stopMediaTracks() {
+      if (this.currentStream) {
+        this.currentStream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      }
     },
     frameProcess() {
       timeInterval += 1;
@@ -113,19 +142,7 @@ export default {
         const colorThief = new ColorThief();
         const rgb = colorThief.getColor(canvas);
         this.pickedColor = Color.rgb(rgb);
-        this.command();
-      }
-    },
-    async command() {
-      const rgb = Color.rgb(this.pickedColor).color;
-      const xy = RGBtoXY(rgb[0], rgb[1], rgb[2]);
-      if (Math.abs(previousXY[0] - xy[0]) > 0.005 || Math.abs(previousXY[1] - xy[1]) > 0.005) {
-        previousXY = xy;
-        this.$store.dispatch(CHANGE_DEVICES_COLOR, {
-          on: true,
-          bri: 254,
-          xy,
-        });
+        this.command(this.pickedColor);
       }
     },
   },

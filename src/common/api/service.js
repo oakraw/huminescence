@@ -18,6 +18,10 @@ const ApiService = {
   setEndpointForfindIP() {
     setEndpoint(REGISTER_URL);
   },
+  setIPEndpoint(ip) {
+    // setEndpoint(`https://vesper.serveo.net/bridge?url=${ip}/api/`);
+    setEndpoint(`http://${ip}/api/`);
+  },
   get(resource, query) {
     return Vue.axios.get(resource, query);
   },
@@ -38,7 +42,9 @@ const ApiService = {
     if (config.url && !config.url.includes(REGISTER_URL)) {
       try {
         const ip = await store.dispatch(GET_IP);
-        newConfig.url = `http://${ip}/api/${newConfig.url}`;
+        // const bridgeEndpoint = `https://vesper.serveo.net/bridge?url=${ip}/api/`;
+        const bridgeEndpoint = `http://${ip}/api/`;
+        newConfig.url = `${bridgeEndpoint}${newConfig.url}`;
       } catch (error) {
         return Promise.reject(error);
       }

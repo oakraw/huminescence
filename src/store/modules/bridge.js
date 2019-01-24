@@ -7,11 +7,12 @@ import {
   BRIDGE_FOUND,
   PAIR_BRIDGE,
   GET_IP,
+  CLEAR_BRIDGE,
   PAIRING_BRIDGE,
   PAIR_BRIDGE_SUCCESS,
   PAIR_BRIDGE_ERROR,
 } from '../actions/bridge';
-import { BridgeService } from '../../common/api';
+import { ApiService, BridgeService } from '../../common/api';
 
 const BRIDGE_ID = 'BRIDGE_ID';
 
@@ -41,8 +42,11 @@ const actions = {
         const availableBridges = await BridgeService.findBridge();
         if (availableBridges.length > 0) {
           const ip = availableBridges[0].internalipaddress;
+          ApiService.setIPEndpoint(ip);
           commit(BRIDGE_FOUND, ip);
           resolve(ip);
+        } else {
+          reject();
         }
       } catch (error) {
         reject(error);
@@ -73,6 +77,10 @@ const actions = {
         }),
     );
   },
+  [CLEAR_BRIDGE]: ({ commit }) => {
+    commit(CLEAR_BRIDGE);
+    saveLocalStorage(null);
+  },
   [GET_IP]: ({ dispatch }) =>
     new Promise(async (resolve, reject) => {
       if (state.bridgeIP) {
@@ -95,6 +103,9 @@ const mutations = {
   [BRIDGE_FOUND]: (state, bridgeIP) => {
     state.finding = false;
     state.bridgeIP = bridgeIP;
+  },
+  [CLEAR_BRIDGE]: (state) => {
+    state.bridgeId = null;
   },
   [PAIRING_BRIDGE]: (state) => {
     state.pairing = true;
