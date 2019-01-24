@@ -5,7 +5,6 @@ import router from './router';
 import store from './store';
 import ApiService from './common/api/service';
 
-
 Vue.config.productionTip = false;
 
 ApiService.init();

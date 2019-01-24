@@ -9,7 +9,7 @@
         row
         wrap
       >
-        <v-flex xs4>
+        <v-flex xs4 pa-3>
           <v-card @click="launchCamera" ripple>
             <v-img
               src="https://www.techlicious.com/images/av/family-watching-movie-700px.jpg"
@@ -17,7 +17,19 @@
             ></v-img>
 
             <v-card-title>
-              <span class="title">Movie Experience</span>
+              <span class="title">Camera Experience</span>
+            </v-card-title>
+          </v-card>
+        </v-flex>
+        <v-flex xs4 pa-3>
+          <v-card @click="launchPlayer" ripple>
+            <v-img
+              src="https://www.techlicious.com/images/av/family-watching-movie-700px.jpg"
+              aspect-ratio="1"
+            ></v-img>
+
+            <v-card-title>
+              <span class="title">Player Experience</span>
             </v-card-title>
           </v-card>
         </v-flex>
@@ -38,6 +50,9 @@ export default {
   methods: {
     launchCamera() {
       this.$router.push({ name: address.CAMERA });
+    },
+    launchPlayer() {
+      this.$router.push({ name: address.PLAYER });
     },
   },
 };
