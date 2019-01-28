@@ -9,7 +9,7 @@
         row
         wrap
       >
-        <v-flex xs4 pa-3>
+        <v-flex xs12 md4 pa-3>
           <v-card @click="launchCamera" ripple>
             <v-img
               src="https://www.techlicious.com/images/av/family-watching-movie-700px.jpg"
@@ -17,11 +17,11 @@
             ></v-img>
 
             <v-card-title>
-              <span class="title">Camera Experience</span>
+              <span class="title">Camera</span>
             </v-card-title>
           </v-card>
         </v-flex>
-        <v-flex xs4 pa-3>
+        <v-flex xs12 md4 pa-3>
           <v-card @click="launchPlayer" ripple>
             <v-img
               src="https://www.techlicious.com/images/av/family-watching-movie-700px.jpg"
@@ -29,7 +29,7 @@
             ></v-img>
 
             <v-card-title>
-              <span class="title">Player Experience</span>
+              <span class="title">Player</span>
             </v-card-title>
           </v-card>
         </v-flex>

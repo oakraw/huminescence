@@ -45,11 +45,18 @@ export default {
       const rgb = Color.rgb(pickedColor).color;
       const luminosity = Color.rgb(pickedColor).luminosity();
       const xy = RGBtoXY(rgb[0], rgb[1], rgb[2]);
+
+      let bri = Math.round(luminosity * 255);
+      if (bri > 30) {
+        bri = 254;
+      } else if (bri < 5) {
+        bri = 0;
+      }
       if (Math.abs(previousXY[0] - xy[0]) > 0.005 || Math.abs(previousXY[1] - xy[1]) > 0.005) {
         previousXY = xy;
         this.$store.dispatch(CHANGE_DEVICES_COLOR, {
           on: true,
-          bri: Math.round(luminosity * 254),
+          bri,
           xy,
         });
       }

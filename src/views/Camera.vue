@@ -94,8 +94,6 @@ export default {
       if (this.cameras.length > 0) {
         this.selectedCamera = this.cameras[0];
       }
-
-      console.log(this.cameras);
     });
   },
   methods: {

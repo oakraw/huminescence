@@ -3,7 +3,7 @@
     <v-flex xs12>
       <div class="demo-frame">
         <div class="demo-container">
-          <video id="video" width="100%" height="450" autoplay muted controls>
+          <video id="video" width="100%" height="450" autoplay controls>
               <source :src="require('../assets/sample_video.mp4')" type="video/mp4">
           </video>
           <canvas id="canvas" width="600" height="400" style="display: none;"></canvas>
@@ -22,7 +22,6 @@
 
 import Color from 'color';
 import ColorThief from '../lib/color-thief';
-import { SHOW_ERROR } from '../store/actions/ui';
 import controlLight from '../mixins/controlLight';
 
 let video = null;
@@ -30,14 +29,6 @@ let canvas = null;
 let context = null;
 
 let timeInterval = 0;
-
-function drawMap(imgdata) {
-  var image = new Image();
-  image.onload = () => {
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-  };
-  image.src = imgdata;
-}
 
 export default {
   mixins: [controlLight],
@@ -65,7 +56,7 @@ export default {
         const colorThief = new ColorThief();
         const rgb = colorThief.getColor(canvas);
         this.pickedColor = Color.rgb(rgb);
-        // this.command(this.pickedColor);
+        this.command(this.pickedColor);
       }
     },
   },
